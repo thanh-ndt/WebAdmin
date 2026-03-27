@@ -1,13 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:5000/api';
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import api from './axiosConfig';
 
 // Dashboard
 export const getDashboardStats = () => api.get('/dashboard/stats');
@@ -46,5 +37,12 @@ export const getMessages = (roomId, params) =>
   api.get(`/chats/${roomId}/messages`, { params });
 export const sendMessage = (roomId, data) =>
   api.post(`/chats/${roomId}/messages`, data);
+
+// Users
+export const getUserStats  = ()         => api.get('/users/stats');
+export const getUsers      = (params)   => api.get('/users', { params });
+export const getUserById   = (id)       => api.get(`/users/${id}`);
+export const updateUser    = (id, data) => api.put(`/users/${id}`, data);
+export const deleteUser    = (id)       => api.delete(`/users/${id}`);
 
 export default api;

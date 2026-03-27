@@ -10,6 +10,7 @@ const menuItems = [
   { path: '/admin/brands', icon: 'bi-tags-fill', label: 'Quản lý thương hiệu' },
   { path: '/admin/appointments', icon: 'bi-calendar-check-fill', label: 'Quản lý lịch hẹn' },
   { path: '/admin/messages', icon: 'bi-chat-dots-fill', label: 'Chat hỗ trợ' },
+  { path: '/admin/users',    icon: 'bi-people-fill',    label: 'Quản lý người dùng' },
 ];
 
 function AdminLayout() {

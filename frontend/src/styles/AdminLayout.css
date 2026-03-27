@@ -1264,6 +1264,24 @@
   }
 }
 
+/* ── Role badge ── */
+.role-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.role-badge.owner {
+  background: #ffeaea;
+  color: #e74c3c;
+}
+.role-badge.customer {
+  background: #eaf4ff;
+  color: #3498db;
+}
+
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;
