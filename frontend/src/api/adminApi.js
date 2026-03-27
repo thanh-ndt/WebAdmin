@@ -45,4 +45,11 @@ export const getUserById   = (id)       => api.get(`/users/${id}`);
 export const updateUser    = (id, data) => api.put(`/users/${id}`, data);
 export const deleteUser    = (id)       => api.delete(`/users/${id}`);
 
+// Orders
+export const getOrderStats     = ()             => api.get('/orders/stats');
+export const getOrders         = (params)       => api.get('/orders', { params });
+export const getOrderById      = (id)           => api.get(`/orders/${id}`);
+export const updateOrderStatus = (id, status)   => api.put(`/orders/${id}/status`, { status });
+export const deleteOrder       = (id)           => api.delete(`/orders/${id}`);
+
 export default api;
