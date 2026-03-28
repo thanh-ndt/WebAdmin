@@ -10,6 +10,7 @@ import AppointmentManagementPage from './pages/AppointmentManagementPage';
 import ChatManagementPage from './pages/ChatManagementPage';
 import UserManagementPage from './pages/UserManagementPage';
 import OrderManagementPage from './pages/OrderManagementPage';
+import ReviewManagementPage from './pages/ReviewManagementPage';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
 
@@ -31,6 +32,7 @@ function App() {
           <Route path="messages" element={<ChatManagementPage />} />
           <Route path="users" element={<UserManagementPage />} />
           <Route path="orders" element={<OrderManagementPage />} />
+          <Route path="reviews" element={<ReviewManagementPage />} />
         </Route>
       </Routes>
     </Router>

@@ -52,4 +52,9 @@ export const getOrderById      = (id)           => api.get(`/orders/${id}`);
 export const updateOrderStatus = (id, status)   => api.put(`/orders/${id}/status`, { status });
 export const deleteOrder       = (id)           => api.delete(`/orders/${id}`);
 
+// Reviews
+export const getReviewStats = ()         => api.get('/reviews/stats');
+export const getReviews     = (params)   => api.get('/reviews', { params });
+export const deleteReview   = (id)       => api.delete(`/reviews/${id}`);
+
 export default api;

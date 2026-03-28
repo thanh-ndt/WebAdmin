@@ -12,6 +12,7 @@ const menuItems = [
   { path: '/admin/messages', icon: 'bi-chat-dots-fill', label: 'Chat hỗ trợ' },
   { path: '/admin/users',    icon: 'bi-people-fill',    label: 'Quản lý người dùng' },
   { path: '/admin/orders',   icon: 'bi-bag-check-fill', label: 'Quản lý đơn hàng'   },
+  { path: '/admin/reviews',  icon: 'bi-star-half',      label: 'Quản lý đánh giá'   },
 ];
 
 function AdminLayout() {
