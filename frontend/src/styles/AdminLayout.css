@@ -181,6 +181,15 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  cursor: pointer;
+  padding: 8px;
+  margin: -8px;
+  border-radius: 12px;
+  transition: var(--transition);
+}
+
+.sidebar-user:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-user-avatar {
@@ -954,17 +963,20 @@
 .chat-layout {
   display: grid;
   grid-template-columns: 340px 1fr;
-  height: calc(100vh - 120px);
+  height: calc(100vh - 200px); /* Constrained height to prevent page scrolling */
   background: var(--card-bg);
   border-radius: 16px;
   box-shadow: var(--card-shadow);
   overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 .chat-rooms-panel {
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .chat-rooms-header {
@@ -982,6 +994,7 @@
 .chat-rooms-list {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .chat-room-item {
@@ -1042,6 +1055,8 @@
 .chat-messages-panel {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .chat-messages-header {
@@ -1062,10 +1077,12 @@
 .chat-messages-body {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  min-height: 0;
+  background-color: #f8fafc; /* Subtle background for messages area */
 }
 
 .chat-message {
@@ -1150,6 +1167,28 @@
   font-size: 48px;
   margin-bottom: 12px;
   opacity: 0.4;
+}
+
+/* Custom Scrollbars for Chat */
+.chat-rooms-list::-webkit-scrollbar,
+.chat-messages-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-rooms-list::-webkit-scrollbar-track,
+.chat-messages-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-rooms-list::-webkit-scrollbar-thumb,
+.chat-messages-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.chat-rooms-list::-webkit-scrollbar-thumb:hover,
+.chat-messages-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* Loading & Empty States */

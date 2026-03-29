@@ -1,22 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../redux/authSlice';
+import { io } from 'socket.io-client';
+import { getAdminNotifications, markNotificationAsRead } from '../api/notificationApi';
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import AdminProfileModal from './AdminProfileModal';
 import '../styles/AdminLayout.css';
 
 const menuItems = [
   { path: '/admin', icon: 'bi-grid-1x2-fill', label: 'Tổng quan', end: true },
   { path: '/admin/vehicles', icon: 'bi-truck', label: 'Quản lý xe' },
   { path: '/admin/brands', icon: 'bi-tags-fill', label: 'Quản lý thương hiệu' },
+  { path: '/admin/vehicle-models', icon: 'bi-grid-fill', label: 'Quản lý dòng xe' },
   { path: '/admin/appointments', icon: 'bi-calendar-check-fill', label: 'Quản lý lịch hẹn' },
   { path: '/admin/messages', icon: 'bi-chat-dots-fill', label: 'Chat hỗ trợ' },
-  { path: '/admin/users',    icon: 'bi-people-fill',    label: 'Quản lý người dùng' },
-  { path: '/admin/orders',   icon: 'bi-bag-check-fill', label: 'Quản lý đơn hàng'   },
-  { path: '/admin/reviews',  icon: 'bi-star-half',      label: 'Quản lý đánh giá'   },
+  { path: '/admin/users', icon: 'bi-people-fill', label: 'Quản lý người dùng' },
+  { path: '/admin/orders', icon: 'bi-bag-check-fill', label: 'Quản lý đơn hàng' },
+  { path: '/admin/reviews', icon: 'bi-star-half', label: 'Quản lý đánh giá' },
+  { path: '/admin/revenue', icon: 'bi-cash-coin', label: 'Quản lý doanh thu' },
+  { path: '/admin/promotions', icon: 'bi-megaphone-fill', label: 'Quản lý khuyến mãi' },
 ];
 
 function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -29,6 +41,51 @@ function AdminLayout() {
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
+  };
+
+  useEffect(() => {
+    if (token && user?.role === 'owner') {
+      fetchNotifications();
+
+      const socket = io('http://localhost:5000', {
+        withCredentials: true,
+      });
+
+      socket.on('new_admin_notification', (data) => {
+        setNotifications((prev) => [data, ...prev]);
+        setUnreadCount((prev) => prev + 1);
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [token, user]);
+
+  const fetchNotifications = async () => {
+    try {
+      const { data } = await getAdminNotifications();
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unreadCount || 0);
+    } catch (error) {
+      console.error('Lỗi khi lấy thông báo:', error);
+    }
+  };
+
+  const handleNotificationClick = async (notification) => {
+    if (!notification.isRead) {
+      try {
+        await markNotificationAsRead(notification._id);
+        setNotifications(prev => prev.map(n => n._id === notification._id ? { ...n, isRead: true } : n));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      } catch (error) {
+        console.error('Lỗi đánh dấu đã đọc:', error);
+      }
+    }
+    setShowNotifications(false);
+    if (notification.link) {
+      navigate(notification.link);
+    }
   };
 
   return (
@@ -67,7 +124,7 @@ function AdminLayout() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-user">
+          <div className="sidebar-user" onClick={() => setShowProfileModal(true)}>
             <div className="sidebar-user-avatar">
               <i className="bi bi-person-fill"></i>
             </div>
@@ -78,6 +135,11 @@ function AdminLayout() {
           </div>
         </div>
       </aside>
+
+      <AdminProfileModal 
+        isOpen={showProfileModal} 
+        onClose={() => setShowProfileModal(false)}
+      />
 
       {/* Overlay for Mobile */}
       {sidebarOpen && (
@@ -100,10 +162,59 @@ function AdminLayout() {
             <h1>Hệ thống quản lý</h1>
           </div>
           <div className="header-actions">
-            <button className="header-btn notification-btn">
-              <i className="bi bi-bell"></i>
-              <span className="notification-badge">3</span>
-            </button>
+            <div className="notification-dropdown-container" style={{ position: 'relative' }}>
+              <button
+                className="header-btn notification-btn"
+                onClick={() => setShowNotifications(!showNotifications)}
+              >
+                <i className="bi bi-bell"></i>
+                {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+              </button>
+
+              {showNotifications && (
+                <div className="notifications-dropdown" style={{
+                  position: 'absolute', top: '50px', right: 0, width: '340px',
+                  background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px',
+                  boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                  zIndex: 50, maxHeight: '450px', overflowY: 'auto'
+                }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Thông báo ({unreadCount})</span>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
+                      <i className="bi bi-bell-slash" style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}></i>
+                      Chưa có thông báo nào
+                    </div>
+                  ) : (
+                    <div className="notifications-list" style={{ display: 'flex', flexDirection: 'column' }}>
+                      {notifications.map((n) => (
+                        <div
+                          key={n._id}
+                          onClick={() => handleNotificationClick(n)}
+                          style={{
+                            padding: '12px 16px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
+                            background: n.isRead ? 'white' : '#f0fdf4',
+                            display: 'flex', flexDirection: 'column', gap: '4px', textAlign: 'left'
+                          }}
+                        >
+                          <div style={{ fontWeight: n.isRead ? 'normal' : '600', fontSize: '14px', color: '#1e293b' }}>
+                            {n.title}
+                          </div>
+                          <div style={{ fontSize: '13px', color: '#475569', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {n.message}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                            <i className="bi bi-clock me-1"></i>
+                            {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: vi })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <button className="header-btn logout-btn" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right"></i>
               <span className="d-none d-md-inline">Đăng xuất</span>

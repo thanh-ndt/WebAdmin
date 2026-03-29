@@ -1,12 +1,28 @@
 import { useState, useEffect } from 'react';
 import {
   getVehicles, createVehicle, updateVehicle, deleteVehicle,
-  getBrands, getVehicleModels
+  getBrands, getVehicleModels, getVehicleStats
 } from '../api/adminApi';
+import StatsHeader from '../components/StatsHeader';
 
 const CATEGORIES = ['Xe ga', 'Xe số', 'Xe thể thao', 'Phân khối lớn', 'Xe điện', 'Phân khối nhỏ cổ điển'];
+
+const SPEC_FIELDS = [
+  { key: 'dong_co', label: 'Động cơ', placeholder: 'VD: 4 kỳ, xi lanh đơn, làm mát bằng không khí' },
+  { key: 'cong_suat', label: 'Công suất', placeholder: 'VD: 6.4kW (8.7PS) / 8000 vòng/phút' },
+  { key: 'tieu_hao', label: 'Tiêu hao nhiên liệu', placeholder: 'VD: 1.68 lít / 100km' },
+  { key: 'chieu_cao_yen', label: 'Chiều cao yên', placeholder: 'VD: 769 mm' },
+  { key: 'binh_xang', label: 'Dung tích bình xăng', placeholder: 'VD: 4.1 lít' },
+  { key: 'phan_h', label: 'Hệ thống phanh', placeholder: 'VD: Phanh đĩa / Phanh tang trống' },
+  { key: 'cong_nghe', label: 'Công nghệ', placeholder: 'VD: Phun xăng điện tử PGM-FI, CBS' },
+];
 const STATUSES = ['available', 'out_of_stock', 'discontinued'];
 const STATUS_LABELS = { available: 'Còn hàng', out_of_stock: 'Hết hàng', discontinued: 'Ngừng kinh doanh' };
+
+const COMMON_MODELS = [
+  'Sirius', 'Wave Alpha', 'Wave RSX', 'Vision', 'Air Blade', 'Exciter', 'Winner X',
+  'SH 125i/150i', 'SH Mode', 'Lead', 'Grande', 'Janus', 'NVX', 'Jupiter', 'Future'
+];
 
 function VehicleManagementPage() {
   const [vehicles, setVehicles] = useState([]);
@@ -28,7 +44,11 @@ function VehicleManagementPage() {
   const [form, setForm] = useState({
     name: '', brand: '', vehicleModel: '', category: 'Xe ga',
     engineCapacity: '', manufacture: '', description: '',
-    price: '', status: 'available', stockQuantity: '',
+    price: '', status: 'available', stockQuantity: '', isPublished: true,
+  });
+  const [specs, setSpecs] = useState({
+    dong_co: '', cong_suat: '', tieu_hao: '', chieu_cao_yen: '',
+    binh_xang: '', phan_h: '', cong_nghe: '',
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
@@ -47,7 +67,7 @@ function VehicleManagementPage() {
     try {
       const [brandsRes, modelsRes] = await Promise.all([getBrands(), getVehicleModels()]);
       setBrands(brandsRes.data);
-      setVehicleModels(modelsRes.data);
+      setVehicleModels(modelsRes.data.data || []);
     } catch (error) {
       console.error('Error fetching dropdowns:', error);
     }
@@ -78,7 +98,11 @@ function VehicleManagementPage() {
     setForm({
       name: '', brand: '', vehicleModel: '', category: 'Xe ga',
       engineCapacity: '', manufacture: '', description: '',
-      price: '', status: 'available', stockQuantity: '',
+      price: '', status: 'available', stockQuantity: '', isPublished: true,
+    });
+    setSpecs({
+      dong_co: '', cong_suat: '', tieu_hao: '', chieu_cao_yen: '',
+      binh_xang: '', phan_h: '', cong_nghe: '',
     });
     setSelectedFiles([]);
     setPreviewUrls([]);
@@ -105,6 +129,17 @@ function VehicleManagementPage() {
       price: vehicle.price || '',
       status: vehicle.status || 'available',
       stockQuantity: vehicle.stockQuantity || '',
+      isPublished: vehicle.isPublished !== undefined ? vehicle.isPublished : true,
+    });
+    const existingSpecs = vehicle.specifications || {};
+    setSpecs({
+      dong_co: existingSpecs.dong_co || '',
+      cong_suat: existingSpecs.cong_suat || '',
+      tieu_hao: existingSpecs.tieu_hao || '',
+      chieu_cao_yen: existingSpecs.chieu_cao_yen || '',
+      binh_xang: existingSpecs.binh_xang || '',
+      phan_h: existingSpecs.phan_h || '',
+      cong_nghe: existingSpecs.cong_nghe || '',
     });
     setExistingImages(vehicle.images || []);
     setRemovedImages([]);
@@ -153,6 +188,15 @@ function VehicleManagementPage() {
         if (form[key] !== '') formData.append(key, form[key]);
       });
 
+      // Build specifications object from non-empty fields
+      const specsObj = {};
+      Object.entries(specs).forEach(([key, val]) => {
+        if (val && val.trim() !== '') specsObj[key] = val.trim();
+      });
+      if (Object.keys(specsObj).length > 0) {
+        formData.append('specifications', JSON.stringify(specsObj));
+      }
+
       selectedFiles.forEach(file => {
         formData.append('images', file);
       });
@@ -176,6 +220,26 @@ function VehicleManagementPage() {
       showToast(error.response?.data?.message || 'Có lỗi xảy ra!', 'error');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleToggleVisibility = async (vehicle) => {
+    const originalStatus = vehicle.isPublished;
+    const newStatus = !originalStatus;
+
+    // Optimistic update
+    setVehicles(prev => prev.map(v => v._id === vehicle._id ? { ...v, isPublished: newStatus } : v));
+
+    try {
+      const formData = new FormData();
+      formData.append('isPublished', newStatus);
+
+      await updateVehicle(vehicle._id, formData);
+      showToast(newStatus ? 'Đã hiển thị xe trên trang sản phẩm' : 'Đã ẩn xe khỏi trang sản phẩm');
+    } catch (error) {
+      // Revert on error
+      setVehicles(prev => prev.map(v => v._id === vehicle._id ? { ...v, isPublished: originalStatus } : v));
+      showToast('Lỗi khi cập nhật trạng thái hiển thị!', 'error');
     }
   };
 
@@ -203,6 +267,17 @@ function VehicleManagementPage() {
           <i className="bi bi-plus-lg"></i> Thêm xe mới
         </button>
       </div>
+
+      <StatsHeader
+        fetchFn={getVehicleStats}
+        cards={[
+          { key: 'total', label: 'Tổng số xe', icon: 'bi-truck', color: '#3498db' },
+          { key: 'available', label: 'Còn hàng', icon: 'bi-check-circle', color: '#27ae60' },
+          { key: 'outOfStock', label: 'Hết hàng', icon: 'bi-dash-circle', color: '#f39c12' },
+          { key: 'discontinued', label: 'Ngừng bán', icon: 'bi-x-circle', color: '#e74c3c' },
+          { key: 'hidden', label: 'Đang ẩn', icon: 'bi-eye-slash-fill', color: '#636e72' },
+        ]}
+      />
 
       {/* Filter Bar */}
       <div className="filter-bar">
@@ -239,10 +314,12 @@ function VehicleManagementPage() {
                 <th>Ảnh</th>
                 <th>Tên xe</th>
                 <th>Thương hiệu</th>
+                <th>Dòng xe</th>
                 <th>Danh mục</th>
                 <th>Giá</th>
                 <th>Tồn kho</th>
                 <th>Trạng thái</th>
+                <th>Hiển thị</th>
                 <th>Hành động</th>
               </tr>
             </thead>
@@ -260,6 +337,11 @@ function VehicleManagementPage() {
                   </td>
                   <td style={{ fontWeight: 600 }}>{vehicle.name}</td>
                   <td>{vehicle.brand?.name || 'N/A'}</td>
+                  <td>
+                    <span className="badge bg-light text-dark border">
+                      {vehicle.vehicleModel?.name || 'N/A'}
+                    </span>
+                  </td>
                   <td>{vehicle.category}</td>
                   <td>{formatCurrency(vehicle.price)}</td>
                   <td>{vehicle.stockQuantity}</td>
@@ -267,6 +349,19 @@ function VehicleManagementPage() {
                     <span className={`badge-status badge-${vehicle.status}`}>
                       {STATUS_LABELS[vehicle.status]}
                     </span>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>
+                    <button
+                      onClick={() => handleToggleVisibility(vehicle)}
+                      style={{
+                        border: 'none', background: 'none', cursor: 'pointer',
+                        color: vehicle.isPublished ? '#27ae60' : '#b2bec3',
+                        fontSize: '1.2rem'
+                      }}
+                      title={vehicle.isPublished ? 'Đang hiển thị - Nhấn để ẩn' : 'Đang ẩn - Nhấn để hiển thị'}
+                    >
+                      <i className={`bi ${vehicle.isPublished ? 'bi-eye-fill' : 'bi-eye-slash'}`}></i>
+                    </button>
                   </td>
                   <td>
                     <button className="action-btn edit" onClick={() => openEditModal(vehicle)} title="Sửa">
@@ -347,20 +442,35 @@ function VehicleManagementPage() {
                       required
                     >
                       <option value="">Chọn dòng xe</option>
-                      {vehicleModels.map(m => <option key={m._id} value={m._id}>{m.name}</option>)}
+                      {vehicleModels
+                        .filter(m => !form.brand || (m.brand?._id || m.brand) === form.brand)
+                        .map(m => <option key={m._id} value={m._id}>{m.name}</option>)
+                      }
                     </select>
+                    {form.brand && vehicleModels.filter(m => (m.brand?._id || m.brand) === form.brand).length === 0 && (
+                      <p style={{ fontSize: 11, color: '#e67e22', marginTop: 4 }}>
+                        Lưu ý: Chưa có dòng xe nào cho hãng này.
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Danh mục</label>
-                    <select
+                    <label>Danh mục (nhập mới)</label>
+                    <input
+                      list="categories-list"
                       value={form.category}
                       onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    >
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                      placeholder="Chọn hoặc nhập danh mục mới..."
+                    />
+                    <datalist id="categories-list">
+                      {/* Combine unique categories from existing vehicles with default categories */}
+                      {Array.from(new Set([...CATEGORIES, ...vehicles.map(v => v.category)]))
+                        .filter(Boolean)
+                        .map(c => <option key={c} value={c} />)
+                      }
+                    </datalist>
                   </div>
                   <div className="form-group">
                     <label>Phân khối (cc)</label>
@@ -424,6 +534,45 @@ function VehicleManagementPage() {
                     placeholder="Mô tả xe..."
                     rows={3}
                   />
+                </div>
+
+                {/* Thông số kỹ thuật */}
+                <div className="form-group" style={{ marginTop: 16, marginBottom: 16 }}>
+                  <label style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, display: 'block' }}>
+                    📋 Thông số kỹ thuật
+                  </label>
+                  <div style={{ background: '#f8fafc', borderRadius: 10, padding: '16px 16px 8px', border: '1px solid #e2e8f0' }}>
+                    {SPEC_FIELDS.map(spec => (
+                      <div key={spec.key} className="form-group" style={{ marginBottom: 12 }}>
+                        <label style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>{spec.label}</label>
+                        <input
+                          type="text"
+                          value={specs[spec.key] || ''}
+                          onChange={(e) => setSpecs(prev => ({ ...prev, [spec.key]: e.target.value }))}
+                          placeholder={spec.placeholder}
+                          style={{ fontSize: 14 }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0' }}>
+                    <input
+                      type="checkbox"
+                      id="isPublished"
+                      style={{ width: 18, height: 18, cursor: 'pointer' }}
+                      checked={form.isPublished}
+                      onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
+                    />
+                    <label htmlFor="isPublished" style={{ marginBottom: 0, fontWeight: 600, cursor: 'pointer' }}>
+                      Hiển thị trên trang sản phẩm
+                    </label>
+                  </div>
+                  <p style={{ fontSize: 12, color: '#888', marginLeft: 28 }}>
+                    Nếu tắt, xe sẽ không xuất hiện trên danh sách sản phẩm và tìm kiếm của khách hàng.
+                  </p>
                 </div>
 
                 {/* Image Upload */}

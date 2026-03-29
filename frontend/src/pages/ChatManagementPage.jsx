@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getChatRooms, getMessages, sendMessage } from '../api/adminApi';
+import { io } from 'socket.io-client';
 
 function ChatManagementPage() {
   const [rooms, setRooms] = useState([]);
@@ -11,8 +12,57 @@ function ChatManagementPage() {
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
 
+  const selectedRoomRef = useRef(null);
+
+  useEffect(() => {
+    selectedRoomRef.current = selectedRoom;
+    if (selectedRoom) {
+      setRooms(prev => prev.map(r => r._id === selectedRoom._id ? { ...r, hasUnread: false } : r));
+    }
+  }, [selectedRoom]);
+
   useEffect(() => {
     fetchRooms();
+
+    const socket = io('http://localhost:5000', { withCredentials: true });
+
+    socket.on('admin_receive_message', (message) => {
+      const currentRoom = selectedRoomRef.current;
+      const isViewing = currentRoom && currentRoom._id === message.chatRoom;
+      const isAdminSender = currentRoom && message.senderId === currentRoom.owner?._id;
+      
+      setRooms(prevRooms => {
+        const roomExists = prevRooms.find(r => r._id === message.chatRoom);
+        if (roomExists) {
+          return prevRooms.map(room => {
+            if (room._id === message.chatRoom) {
+              return { 
+                ...room, 
+                lastMessage: message.content, 
+                lastMessageTime: message.createdAt || new Date(), 
+                hasUnread: !isAdminSender && !isViewing 
+              };
+            }
+            return room;
+          }).sort((a,b) => new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0));
+        } else {
+          fetchRooms();
+          return prevRooms;
+        }
+      });
+
+      if (isViewing) {
+        setMessages(prev => {
+           // Tránh duplicate tin nhắn nếu fetchMessages đã gọi xong
+           if (!prev.find(m => m._id === message._id)) {
+              return [...prev, message];
+           }
+           return prev;
+        });
+      }
+    });
+
+    return () => socket.disconnect();
   }, []);
 
   useEffect(() => {
@@ -60,12 +110,19 @@ function ChatManagementPage() {
     setSending(true);
     try {
       // Sử dụng owner ID để gửi tin nhắn (admin)
-      await sendMessage(selectedRoom._id, {
+      const { data } = await sendMessage(selectedRoom._id, {
         content: newMessage,
         senderId: selectedRoom.owner?._id,
       });
+      
       setNewMessage('');
-      fetchMessages(selectedRoom._id);
+      // Optimistically add the message to the list to avoid full refresh spinner
+      setMessages(prev => {
+        if (!prev.find(m => m._id === data._id)) {
+          return [...prev, data];
+        }
+        return prev;
+      });
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
@@ -120,9 +177,16 @@ function ChatManagementPage() {
                   key={room._id}
                   className={`chat-room-item ${selectedRoom?._id === room._id ? 'active' : ''}`}
                   onClick={() => setSelectedRoom(room)}
+                  style={{ position: 'relative' }}
                 >
-                  <div className="chat-room-avatar">
+                  <div className="chat-room-avatar" style={{ position: 'relative' }}>
                     {getInitial(room.customer?.fullName)}
+                    {room.hasUnread && (
+                      <div style={{
+                        position: 'absolute', top: -2, right: -2, width: 12, height: 12,
+                        background: '#e74c3c', borderRadius: '50%', border: '2px solid white'
+                      }} />
+                    )}
                   </div>
                   <div className="chat-room-info">
                     <div className="chat-room-name">
@@ -132,8 +196,14 @@ function ChatManagementPage() {
                       {room.lastMessage}
                     </div>
                   </div>
-                  <div style={{ fontSize: 11, color: '#94a3b8', whiteSpace: 'nowrap' }}>
-                    {formatDate(room.lastMessageTime)}
+                  <div style={{ fontSize: 11, color: '#94a3b8', whiteSpace: 'nowrap', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                    <span>{formatDate(room.lastMessageTime)}</span>
+                    {room.hasUnread && (
+                      <span style={{
+                        background: '#e74c3c', color: 'white', fontSize: 10, fontWeight: 'bold',
+                        padding: '2px 6px', borderRadius: 10
+                      }}>Mới</span>
+                    )}
                   </div>
                 </div>
               ))

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getAppointments, updateAppointmentStatus, deleteAppointment } from '../api/adminApi';
+import { getAppointments, updateAppointmentStatus, deleteAppointment, getAppointmentStats } from '../api/adminApi';
+import StatsHeader from '../components/StatsHeader';
 
 const STATUS_LABELS = {
   pending: 'Chờ xác nhận',
@@ -73,6 +74,17 @@ function AppointmentManagementPage() {
       <div className="page-header">
         <h2>📅 Quản lý lịch hẹn</h2>
       </div>
+
+      <StatsHeader 
+        fetchFn={getAppointmentStats} 
+        cards={[
+          { key: 'total',     label: 'Tổng lịch hẹn',  icon: 'bi-calendar-fill',   color: '#3498db' },
+          { key: 'pending',   label: 'Chờ xác nhận',   icon: 'bi-hourglass-split', color: '#f39c12' },
+          { key: 'confirmed', label: 'Đã xác nhận',    icon: 'bi-check-circle',    color: '#3498db' },
+          { key: 'completed', label: 'Hoàn thành',    icon: 'bi-calendar-check',   color: '#27ae60' },
+          { key: 'cancelled', label: 'Đã hủy',         icon: 'bi-x-circle',        color: '#e74c3c' },
+        ]} 
+      />
 
       <div className="filter-bar">
         <input
