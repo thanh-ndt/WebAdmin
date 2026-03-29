@@ -7,13 +7,10 @@ const vehicleModelSchema = new mongoose.Schema(
       required: [true, 'Tên dòng xe là bắt buộc'],
       trim: true,
     },
-    engineType: {
-      type: String,
-      trim: true,
-    },
-    fuelType: {
-      type: String,
-      trim: true,
+    brand: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Brand',
+      required: [true, 'Hãng xe là bắt buộc']
     },
     description: {
       type: String,

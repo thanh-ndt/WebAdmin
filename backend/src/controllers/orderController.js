@@ -1,6 +1,8 @@
 const Order = require('../models/Order');
 const OrderDetail = require('../models/OrderDetail');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
+const sendEmail = require('../utils/sendEmail');
 require('../models/Promotion');
 
 // GET /api/orders/stats
@@ -100,6 +102,60 @@ const updateOrderStatus = async (req, res) => {
     ).populate('customer', 'fullName email');
 
     if (!order) return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+
+    // Tạo thông báo cho khách hàng
+    try {
+        let statusText = status;
+        switch(status) {
+            case 'pending': statusText = 'Đang chờ xác nhận'; break;
+            case 'confirmed': statusText = 'Đã xác nhận'; break;
+            case 'shipping': statusText = 'Đang giao hàng'; break;
+            case 'delivered': statusText = 'Đã giao hàng thành công'; break;
+            case 'cancelled': statusText = 'Đã hủy'; break;
+        }
+
+        if (order.customer) {
+            const newNotif = new Notification({
+                owner: order.customer._id,
+                title: 'Cập nhật trạng thái đơn hàng',
+                message: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()} của bạn đã được chuyển sang trạng thái: ${statusText}.`,
+                isRead: false
+            });
+            await newNotif.save();
+
+            // 🟢 Gửi Email khi đơn hàng đã giao thành công
+            if (status === 'delivered') {
+                try {
+                    await sendEmail({
+                        to: order.customer.email,
+                        subject: `Đơn hàng #${order._id.toString().slice(-6).toUpperCase()} đã giao thành công`,
+                        html: `
+                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                                <h2 style="color: #27ae60; text-align: center;">Giao Hàng Thành Công!</h2>
+                                <p>Xin chào <strong>${order.customer.fullName}</strong>,</p>
+                                <p>Đơn hàng của bạn đã được giao thành công. Cảm ơn bạn đã lựa chọn mua sắm tại hệ thống của chúng tôi!</p>
+                                
+                                <div style="background-color: #f7fafc; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                                    <p style="margin: 5px 0;"><strong>Mã đơn hàng:</strong> #${order._id.toString().toUpperCase()}</p>
+                                    <p style="margin: 5px 0;"><strong>Tổng tiền:</strong> ${new Intl.NumberFormat('vi-VN').format(order.totalAmount)} VNĐ</p>
+                                    <p style="margin: 5px 0;"><strong>Trạng thái:</strong> Đã giao hàng</p>
+                                </div>
+                                
+                                <p>Chúng tôi hy vọng bạn hài lòng với sản phẩm đã nhận. Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ hotline: <strong>1900 xxxx</strong></p>
+                                
+                                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+                                <p style="font-size: 12px; color: #718096; text-align: center;">Chúc bạn một ngày tuyệt vời!</p>
+                            </div>
+                        `
+                    });
+                } catch (emailErr) {
+                    console.error('Lỗi khi gửi email xác nhận đơn hàng:', emailErr);
+                }
+            }
+        }
+    } catch (err) {
+        console.error('Lỗi tạo thông báo đơn hàng:', err);
+    }
 
     res.json({ message: 'Cập nhật trạng thái thành công', order });
   } catch (error) {

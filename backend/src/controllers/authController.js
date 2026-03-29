@@ -78,7 +78,7 @@ const forgotPassword = async (req, res) => {
         user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 giờ
         await user.save();
 
-        const resetUrl = `${process.env.ADMIN_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+        const resetUrl = `${process.env.ADMIN_URL || 'http://localhost:5175'}/reset-password/${resetToken}`;
         await sendEmail({
             to: email,
             subject: 'Đặt lại mật khẩu - UTE Shop Admin',
@@ -139,4 +139,75 @@ const resetPassword = async (req, res) => {
     }
 };
 
-module.exports = { login, forgotPassword, resetPassword };
+// ========================
+// CẬP NHẬT THÔNG TIN CÁ NHÂN
+// ========================
+const updateProfile = async (req, res) => {
+    try {
+        const { fullName, phoneNumber } = req.body;
+        const userId = req.user._id;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Người dùng không tồn tại.' });
+        }
+
+        if (fullName) user.fullName = fullName;
+        if (phoneNumber) user.phoneNumber = phoneNumber;
+
+        await user.save();
+
+        res.json({
+            message: 'Cập nhật thông tin thành công!',
+            user: {
+                _id: user._id,
+                email: user.email,
+                fullName: user.fullName,
+                phoneNumber: user.phoneNumber,
+                role: user.role,
+                avatar: user.avatar,
+            }
+        });
+    } catch (error) {
+        console.error('Lỗi cập nhật thông tin:', error);
+        res.status(500).json({ message: 'Lỗi server khi cập nhật thông tin.' });
+    }
+};
+
+// ========================
+// ĐỔI MẬT KHẨU
+// ========================
+const changePassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const userId = req.user._id;
+
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ message: 'Vui lòng nhập mật khẩu cũ và mật khẩu mới.' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự.' });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Người dùng không tồn tại.' });
+        }
+
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Mật khẩu cũ không chính xác.' });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        res.json({ message: 'Đổi mật khẩu thành công!' });
+    } catch (error) {
+        console.error('Lỗi đổi mật khẩu:', error);
+        res.status(500).json({ message: 'Lỗi khi đổi mật khẩu.' });
+    }
+};
+
+module.exports = { login, forgotPassword, resetPassword, updateProfile, changePassword };

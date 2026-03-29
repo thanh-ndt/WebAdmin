@@ -73,3 +73,13 @@ exports.deleteBrand = async (req, res) => {
     res.status(500).json({ message: 'Lỗi xóa thương hiệu', error: error.message });
   }
 };
+
+// GET /api/brands/stats - Lấy thống kê thương hiệu
+exports.getBrandStats = async (req, res) => {
+  try {
+    const total = await Brand.countDocuments();
+    res.json({ total });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi lấy thống kê thương hiệu', error: error.message });
+  }
+};

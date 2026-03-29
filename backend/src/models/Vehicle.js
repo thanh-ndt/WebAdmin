@@ -19,7 +19,6 @@ const vehicleSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Xe ga', 'Xe số', 'Xe thể thao', 'Phân khối lớn', 'Xe điện', 'Phân khối nhỏ cổ điển'],
       default: 'Xe ga',
       trim: true,
     },
@@ -80,6 +79,10 @@ const vehicleSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
+    },
+    isPublished: {
+      type: Boolean,
+      default: true,
     },
   },
   {

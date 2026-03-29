@@ -3,6 +3,7 @@ const router = express.Router();
 const brandController = require('../controllers/brandController');
 
 router.get('/', brandController.getBrands);
+router.get('/stats', brandController.getBrandStats);
 router.get('/:id', brandController.getBrandById);
 router.post('/', brandController.createBrand);
 router.put('/:id', brandController.updateBrand);

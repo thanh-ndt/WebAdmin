@@ -4,6 +4,7 @@ const { uploadVehicleImages } = require('../congfig/cloudinaryVehicle');
 const vehicleController = require('../controllers/vehicleController');
 
 router.get('/', vehicleController.getVehicles);
+router.get('/stats', vehicleController.getVehicleStats);
 router.get('/:id', vehicleController.getVehicleById);
 router.post('/', uploadVehicleImages, vehicleController.createVehicle);
 router.put('/:id', uploadVehicleImages, vehicleController.updateVehicle);

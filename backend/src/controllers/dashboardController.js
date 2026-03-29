@@ -53,3 +53,47 @@ exports.getDashboardStats = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
+// GET /api/dashboard/monthly-revenue - Lấy doanh thu theo từng tháng
+exports.getMonthlyRevenue = async (req, res) => {
+  try {
+    const monthlyRevenue = await Order.aggregate([
+      { $match: { status: { $ne: 'cancelled' } } },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$orderDate' },
+            month: { $month: '$orderDate' },
+          },
+          totalRevenue: { $sum: '$totalAmount' },
+          orderCount: { $count: {} },
+        },
+      },
+      { $sort: { '_id.year': -1, '_id.month': -1 } },
+    ]);
+
+    res.json(monthlyRevenue);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi lấy doanh thu tháng', error: error.message });
+  }
+};
+
+// GET /api/dashboard/revenue-details/:year/:month - Lấy chi tiết đơn hàng trong tháng
+exports.getRevenueDetails = async (req, res) => {
+  try {
+    const { year, month } = req.params;
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59);
+
+    const orders = await Order.find({
+      status: { $ne: 'cancelled' },
+      orderDate: { $gte: startDate, $lte: endDate },
+    })
+      .populate('customer', 'fullName email')
+      .sort({ orderDate: -1 });
+
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi lấy chi tiết doanh thu', error: error.message });
+  }
+};

@@ -19,6 +19,20 @@ const promotionSchema = new mongoose.Schema(
       enum: ['percentage', 'fixed'],
       required: [true, 'Loại khuyến mãi là bắt buộc'],
     },
+    description: {
+      type: String,
+      trim: true,
+    },
+    applicableModels: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'VehicleModel',
+      },
+    ],
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
     validFrom: {
       type: Date,
       required: true,

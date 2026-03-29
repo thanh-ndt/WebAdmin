@@ -31,9 +31,11 @@ app.use('/api/dashboard', require('./src/routes/dashboardRoutes'));
 app.use('/api/vehicle-models', require('./src/routes/vehicleModelRoutes'));
 app.use('/api/users', require('./src/routes/userRoutes'));
 app.use('/api/orders', require('./src/routes/orderRoutes'));
+app.use('/api/notifications', require('./src/routes/notificationRoutes'));
 app.use('/api/reviews', require('./src/routes/reviewRoutes'));
+app.use('/api/promotions', require('./src/routes/promotionRoutes'));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
   console.log(`Admin Server đang chạy trên port ${PORT}`);

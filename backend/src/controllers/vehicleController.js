@@ -3,6 +3,24 @@ const Brand = require('../models/Brand');
 const VehicleModel = require('../models/VehicleModel');
 const { deleteFromCloudinary, extractPublicId } = require('../congfig/cloudinaryVehicle');
 
+// Helper to resolve vehicle model by ID or name
+const resolveVehicleModel = async (modelInput) => {
+  if (!modelInput) return null;
+  
+  // Check if it's a valid ObjectId
+  if (require('mongoose').Types.ObjectId.isValid(modelInput)) {
+    return modelInput;
+  }
+  
+  // If it's a string name, search for it or create it
+  let model = await VehicleModel.findOne({ name: { $regex: new RegExp(`^${modelInput.trim()}$`, 'i') } });
+  if (!model) {
+    model = new VehicleModel({ name: modelInput.trim() });
+    await model.save();
+  }
+  return model._id;
+};
+
 // GET /api/vehicles - Lấy danh sách xe
 exports.getVehicles = async (req, res) => {
   try {
@@ -56,17 +74,21 @@ exports.createVehicle = async (req, res) => {
   try {
     const {
       name, brand, vehicleModel, category, engineCapacity,
-      manufacture, description, specifications, price, status, stockQuantity
+      manufacture, description, specifications, price, status, stockQuantity,
+      isPublished
     } = req.body;
 
     // Lấy URLs ảnh từ files đã upload lên Cloudinary
     const images = req.files ? req.files.map(file => file.path) : [];
 
+    const resolvedModelId = await resolveVehicleModel(vehicleModel);
+
     const vehicle = new Vehicle({
-      name, brand, vehicleModel, category, engineCapacity,
+      name, brand, vehicleModel: resolvedModelId, category, engineCapacity,
       manufacture, description,
       specifications: specifications ? JSON.parse(specifications) : {},
-      price, status, stockQuantity, images
+      price, status, stockQuantity, images,
+      isPublished: isPublished !== undefined ? isPublished : true
     });
 
     await vehicle.save();
@@ -92,7 +114,7 @@ exports.updateVehicle = async (req, res) => {
     const {
       name, brand, vehicleModel, category, engineCapacity,
       manufacture, description, specifications, price, status,
-      stockQuantity, removedImages
+      stockQuantity, removedImages, isPublished
     } = req.body;
 
     // Xóa ảnh cũ khỏi Cloudinary nếu có
@@ -117,7 +139,9 @@ exports.updateVehicle = async (req, res) => {
     // Cập nhật các field khác
     if (name) vehicle.name = name;
     if (brand) vehicle.brand = brand;
-    if (vehicleModel) vehicle.vehicleModel = vehicleModel;
+    if (vehicleModel) {
+      vehicle.vehicleModel = await resolveVehicleModel(vehicleModel);
+    }
     if (category) vehicle.category = category;
     if (engineCapacity !== undefined) vehicle.engineCapacity = engineCapacity;
     if (manufacture) vehicle.manufacture = manufacture;
@@ -126,6 +150,7 @@ exports.updateVehicle = async (req, res) => {
     if (price !== undefined) vehicle.price = price;
     if (status) vehicle.status = status;
     if (stockQuantity !== undefined) vehicle.stockQuantity = stockQuantity;
+    if (isPublished !== undefined) vehicle.isPublished = isPublished;
 
     await vehicle.save();
 
@@ -159,5 +184,22 @@ exports.deleteVehicle = async (req, res) => {
     res.json({ message: 'Xóa xe thành công' });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi xóa xe', error: error.message });
+  }
+};
+
+// GET /api/vehicles/stats - Lấy thống kê xe
+exports.getVehicleStats = async (req, res) => {
+  try {
+    const [total, available, outOfStock, discontinued, hidden] = await Promise.all([
+      Vehicle.countDocuments(),
+      Vehicle.countDocuments({ status: 'available' }),
+      Vehicle.countDocuments({ status: 'out_of_stock' }),
+      Vehicle.countDocuments({ status: 'discontinued' }),
+      Vehicle.countDocuments({ isPublished: false }),
+    ]);
+
+    res.json({ total, available, outOfStock, discontinued, hidden });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi lấy thống kê xe', error: error.message });
   }
 };

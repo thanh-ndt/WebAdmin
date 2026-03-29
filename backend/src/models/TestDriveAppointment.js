@@ -15,6 +15,11 @@ const testDriveAppointmentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    guestEmail: {
+      type: String,
+      trim: true,
+      lowercase: true,
+    },
     vehicle: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Vehicle',
