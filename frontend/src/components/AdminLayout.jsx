@@ -21,6 +21,7 @@ const menuItems = [
   { path: '/admin/reviews', icon: 'bi-star-half', label: 'Quản lý đánh giá' },
   { path: '/admin/revenue', icon: 'bi-cash-coin', label: 'Quản lý doanh thu' },
   { path: '/admin/promotions', icon: 'bi-megaphone-fill', label: 'Quản lý khuyến mãi' },
+  { path: '/admin/returns', icon: 'bi-box-arrow-left', label: 'Quản lý trả hàng' },
 ];
 
 function AdminLayout() {
@@ -34,20 +35,23 @@ function AdminLayout() {
   const dispatch = useDispatch();
   const { user, token } = useSelector((state) => state.auth);
 
-  if (!token || !user || user.role !== 'owner') {
-    return <Navigate to="/login" replace />;
-  }
+  const isAuthorized = token && user && (user.role === 'owner' || user.role === 'admin');
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
+  const fetchNotifications = async () => {
+    try {
+      const { data } = await getAdminNotifications();
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unreadCount || 0);
+    } catch (error) {
+      console.error('Lỗi khi lấy thông báo:', error);
+    }
   };
 
   useEffect(() => {
-    if (token && user?.role === 'owner') {
+    if (isAuthorized) {
       fetchNotifications();
 
-      const socket = io('http://localhost:5000', {
+      const socket = io('http://localhost:5001', {
         withCredentials: true,
       });
 
@@ -60,17 +64,16 @@ function AdminLayout() {
         socket.disconnect();
       };
     }
-  }, [token, user]);
+  }, [isAuthorized]);
 
-  const fetchNotifications = async () => {
-    try {
-      const { data } = await getAdminNotifications();
-      setNotifications(data.notifications || []);
-      setUnreadCount(data.unreadCount || 0);
-    } catch (error) {
-      console.error('Lỗi khi lấy thông báo:', error);
-    }
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
   };
+
+  if (!isAuthorized) {
+    return <Navigate to="/login" replace />;
+  }
 
   const handleNotificationClick = async (notification) => {
     if (!notification.isRead) {

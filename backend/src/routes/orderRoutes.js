@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, ownerOnly } = require('../middleware/authMiddleware');
+const { protect, adminOnly } = require('../middleware/authMiddleware');
 const {
   getOrderStats,
   getOrders,
@@ -9,7 +9,7 @@ const {
   deleteOrder,
 } = require('../controllers/orderController');
 
-router.use(protect, ownerOnly);
+router.use(protect, adminOnly);
 
 router.get('/stats', getOrderStats);
 router.get('/', getOrders);

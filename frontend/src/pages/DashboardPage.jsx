@@ -38,7 +38,7 @@ function DashboardPage() {
   return (
     <div className="dashboard-page">
       <div className="dashboard-welcome">
-        <h2>👋 Chào mừng trở lại, Admin!</h2>
+        <h2>Chào mừng trở lại, Admin!</h2>
         <p>Đây là tổng quan hoạt động hệ thống của bạn hôm nay.</p>
       </div>
 
@@ -121,7 +121,7 @@ function DashboardPage() {
       {topVehicles.length > 0 && (
         <div className="dashboard-section">
           <div className="section-header">
-            <h3>🏆 Xe bán chạy nhất</h3>
+            <h3>Xe bán chạy nhất</h3>
           </div>
           <table className="data-table">
             <thead>

@@ -87,17 +87,17 @@ function BrandManagementPage() {
   return (
     <div className="management-page">
       <div className="page-header">
-        <h2>🏷️ Quản lý thương hiệu</h2>
+        <h2>Quản lý thương hiệu</h2>
         <button className="btn-add" onClick={openAddModal}>
           <i className="bi bi-plus-lg"></i> Thêm thương hiệu
         </button>
       </div>
-      
-      <StatsHeader 
-        fetchFn={getBrandStats} 
+
+      <StatsHeader
+        fetchFn={getBrandStats}
         cards={[
           { key: 'total', label: 'Tổng thương hiệu', icon: 'bi-tags-fill', color: '#3498db' }
-        ]} 
+        ]}
       />
 
       {loading ? (

@@ -30,21 +30,21 @@ function ChatManagementPage() {
       const currentRoom = selectedRoomRef.current;
       const isViewing = currentRoom && currentRoom._id === message.chatRoom;
       const isAdminSender = currentRoom && message.senderId === currentRoom.owner?._id;
-      
+
       setRooms(prevRooms => {
         const roomExists = prevRooms.find(r => r._id === message.chatRoom);
         if (roomExists) {
           return prevRooms.map(room => {
             if (room._id === message.chatRoom) {
-              return { 
-                ...room, 
-                lastMessage: message.content, 
-                lastMessageTime: message.createdAt || new Date(), 
-                hasUnread: !isAdminSender && !isViewing 
+              return {
+                ...room,
+                lastMessage: message.content,
+                lastMessageTime: message.createdAt || new Date(),
+                hasUnread: !isAdminSender && !isViewing
               };
             }
             return room;
-          }).sort((a,b) => new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0));
+          }).sort((a, b) => new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0));
         } else {
           fetchRooms();
           return prevRooms;
@@ -53,11 +53,11 @@ function ChatManagementPage() {
 
       if (isViewing) {
         setMessages(prev => {
-           // Tránh duplicate tin nhắn nếu fetchMessages đã gọi xong
-           if (!prev.find(m => m._id === message._id)) {
-              return [...prev, message];
-           }
-           return prev;
+          // Tránh duplicate tin nhắn nếu fetchMessages đã gọi xong
+          if (!prev.find(m => m._id === message._id)) {
+            return [...prev, message];
+          }
+          return prev;
         });
       }
     });
@@ -114,7 +114,7 @@ function ChatManagementPage() {
         content: newMessage,
         senderId: selectedRoom.owner?._id,
       });
-      
+
       setNewMessage('');
       // Optimistically add the message to the list to avoid full refresh spinner
       setMessages(prev => {
@@ -154,7 +154,7 @@ function ChatManagementPage() {
   return (
     <div className="management-page">
       <div className="page-header">
-        <h2>💬 Chat hỗ trợ</h2>
+        <h2>Chat hỗ trợ</h2>
       </div>
 
       <div className="chat-layout">

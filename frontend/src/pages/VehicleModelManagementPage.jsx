@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { 
-  getVehicleModels, 
-  createVehicleModel, 
-  updateVehicleModel, 
-  deleteVehicleModel, 
+import {
+  getVehicleModels,
+  createVehicleModel,
+  updateVehicleModel,
+  deleteVehicleModel,
   getVehicleModelStats,
   getBrands
 } from '../api/adminApi';
@@ -17,10 +17,10 @@ function VehicleModelManagementPage() {
   const [editing, setEditing] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
-  const [form, setForm] = useState({ 
-    name: '', 
+  const [form, setForm] = useState({
+    name: '',
     brand: '',
-    description: '' 
+    description: ''
   });
 
   useEffect(() => {
@@ -59,10 +59,10 @@ function VehicleModelManagementPage() {
   };
 
   const resetForm = () => {
-    setForm({ 
-      name: '', 
+    setForm({
+      name: '',
       brand: '',
-      description: '' 
+      description: ''
     });
     setEditing(null);
   };
@@ -121,17 +121,17 @@ function VehicleModelManagementPage() {
   return (
     <div className="management-page">
       <div className="page-header">
-        <h2>🏍️ Quản lý dòng xe</h2>
+        <h2>Quản lý dòng xe</h2>
         <button className="btn-add" onClick={openAddModal}>
           <i className="bi bi-plus-lg"></i> Thêm dòng xe
         </button>
       </div>
-      
-      <StatsHeader 
-        fetchFn={getVehicleModelStats} 
+
+      <StatsHeader
+        fetchFn={getVehicleModelStats}
         cards={[
           { key: 'total', label: 'Tổng số dòng xe', icon: 'bi-grid-fill', color: '#e67e22' }
-        ]} 
+        ]}
       />
 
       {loading ? (

@@ -8,11 +8,11 @@ import {
 } from '../api/adminApi';
 
 const STATUS_CONFIG = {
-  pending:   { label: 'Chờ xác nhận', color: '#f39c12', bg: '#fff8e6', icon: 'bi-hourglass-split' },
-  confirmed: { label: 'Đã xác nhận',  color: '#3498db', bg: '#eaf4ff', icon: 'bi-check-circle'   },
-  shipping:  { label: 'Đang giao',    color: '#9b59b6', bg: '#f5eeff', icon: 'bi-truck'           },
-  delivered: { label: 'Đã giao',      color: '#27ae60', bg: '#eafaf1', icon: 'bi-bag-check-fill'  },
-  cancelled: { label: 'Đã hủy',       color: '#e74c3c', bg: '#ffeaea', icon: 'bi-x-circle'        },
+  pending: { label: 'Chờ xác nhận', color: '#f39c12', bg: '#fff8e6' },
+  confirmed: { label: 'Đã xác nhận', color: '#3498db', bg: '#eaf4ff' },
+  shipping: { label: 'Đang giao', color: '#9b59b6', bg: '#f5eeff' },
+  delivered: { label: 'Đã giao', color: '#27ae60', bg: '#eafaf1' },
+  cancelled: { label: 'Đã hủy', color: '#e74c3c', bg: '#ffeaea' },
 };
 
 function formatDate(dateStr) {
@@ -99,16 +99,16 @@ function pageBtnStyle(disabled, active = false) {
 function OrderManagementPage() {
   const [stats, setStats] = useState(null);
 
-  const [orders, setOrders]         = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [search, setSearch]         = useState('');
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const LIMIT = 10;
 
-  const [detailData, setDetailData]     = useState(null);
+  const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [showDetail, setShowDetail]     = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   const [toast, setToast] = useState(null);
 
@@ -198,7 +198,7 @@ function OrderManagementPage() {
 
       {/* ── Page Header ── */}
       <div className="page-header">
-        <h2>🛒 Quản lý đơn hàng</h2>
+        <h2>Quản lý đơn hàng</h2>
       </div>
 
       {/* ── Stats Cards ── */}
@@ -208,13 +208,13 @@ function OrderManagementPage() {
           gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))',
           gap: 16, marginBottom: 24,
         }}>
-          <StatCard icon="bi-bag-fill"          color="#3498db" label="Tổng đơn hàng"  value={stats.total} />
-          <StatCard icon="bi-hourglass-split"   color="#f39c12" label="Chờ xác nhận"   value={stats.pending} />
-          <StatCard icon="bi-check-circle-fill" color="#3498db" label="Đã xác nhận"    value={stats.confirmed} />
-          <StatCard icon="bi-truck"             color="#9b59b6" label="Đang giao"       value={stats.shipping} />
-          <StatCard icon="bi-bag-check-fill"    color="#27ae60" label="Đã giao"         value={stats.delivered} />
-          <StatCard icon="bi-x-circle-fill"     color="#e74c3c" label="Đã hủy"          value={stats.cancelled} />
-          <StatCard icon="bi-currency-exchange" color="#16a085" label="Doanh thu"       value={stats.revenue} isCurrency />
+          <StatCard icon="bi-bag-fill" color="#3498db" label="Tổng đơn hàng" value={stats.total} />
+          <StatCard icon="bi-hourglass-split" color="#f39c12" label="Chờ xác nhận" value={stats.pending} />
+          <StatCard icon="bi-check-circle-fill" color="#3498db" label="Đã xác nhận" value={stats.confirmed} />
+          <StatCard icon="bi-truck" color="#9b59b6" label="Đang giao" value={stats.shipping} />
+          <StatCard icon="bi-bag-check-fill" color="#27ae60" label="Đã giao" value={stats.delivered} />
+          <StatCard icon="bi-x-circle-fill" color="#e74c3c" label="Đã hủy" value={stats.cancelled} />
+          <StatCard icon="bi-currency-exchange" color="#16a085" label="Doanh thu" value={stats.revenue} isCurrency />
         </div>
       )}
 
@@ -374,22 +374,46 @@ function OrderManagementPage() {
                   }} title={order.shippingAddress}>
                     {order.shippingAddress || '—'}
                   </td>
-                  <td>
-                    <select
-                      value={order.status}
-                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                      style={{
-                        border: `1px solid ${STATUS_CONFIG[order.status]?.color || '#ddd'}`,
-                        color: STATUS_CONFIG[order.status]?.color || '#333',
-                        background: STATUS_CONFIG[order.status]?.bg || '#fff',
-                        borderRadius: 20, fontSize: 12, fontWeight: 600,
-                        padding: '4px 8px', cursor: 'pointer', outline: 'none',
-                      }}
-                    >
-                      {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
-                        <option key={key} value={key}>{label}</option>
-                      ))}
-                    </select>
+                  <td style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {order.status === 'delivered' && order.returnStatus === 'approved' ? (
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                        padding: '4px 10px', borderRadius: 20,
+                        fontSize: 12, fontWeight: 600,
+                        color: '#27ae60', background: '#eafaf1', border: '1px solid #27ae60'
+                      }}>
+                        <i className="bi bi-arrow-return-left" /> Đã duyệt trả hàng
+                      </span>
+                    ) : (
+                      <>
+                        <select
+                          value={order.status}
+                          onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                          style={{
+                            border: `1px solid ${STATUS_CONFIG[order.status]?.color || '#ddd'}`,
+                            color: STATUS_CONFIG[order.status]?.color || '#333',
+                            background: STATUS_CONFIG[order.status]?.bg || '#fff',
+                            borderRadius: 20, fontSize: 12, fontWeight: 600,
+                            padding: '4px 8px', cursor: 'pointer', outline: 'none',
+                          }}
+                        >
+                          {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
+                            <option key={key} value={key}>{label}</option>
+                          ))}
+                        </select>
+
+                        {order.status === 'delivered' && order.returnStatus === 'pending' && (
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#f39c12', background: '#fff8e6', padding: '2px 6px', borderRadius: 10, border: '1px solid #f39c12' }} title="Đang yêu cầu trả">
+                            <i className="bi bi-arrow-counterclockwise" />
+                          </span>
+                        )}
+                        {order.status === 'delivered' && order.returnStatus === 'rejected' && (
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#e74c3c', background: '#ffeaea', padding: '2px 6px', borderRadius: 10, border: '1px solid #e74c3c' }} title="Từ chối trả hàng">
+                            <i className="bi bi-x-circle" />
+                          </span>
+                        )}
+                      </>
+                    )}
                   </td>
                   <td>
                     <button
@@ -459,7 +483,7 @@ function OrderManagementPage() {
             style={{ maxWidth: 640 }}
           >
             <div className="modal-header">
-              <h3>🛒 Chi tiết đơn hàng</h3>
+              <h3>hi tiết đơn hàng</h3>
               <button className="modal-close-btn" onClick={() => setShowDetail(false)}>
                 <i className="bi bi-x-lg" />
               </button>
@@ -502,10 +526,10 @@ function OrderManagementPage() {
                   {/* Order meta */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 20px', marginBottom: 20 }}>
                     {[
-                      { icon: 'bi-calendar-fill',    label: 'Ngày đặt',         value: formatDateTime(detailData.order.orderDate || detailData.order.createdAt) },
-                      { icon: 'bi-geo-alt-fill',      label: 'Địa chỉ giao',     value: detailData.order.shippingAddress },
-                      { icon: 'bi-tag-fill',          label: 'Mã khuyến mãi',    value: detailData.order.promotion?.code || '—' },
-                      { icon: 'bi-cash-coin',         label: 'Tổng tiền',        value: formatCurrency(detailData.order.totalAmount), highlight: true },
+                      { icon: 'bi-calendar-fill', label: 'Ngày đặt', value: formatDateTime(detailData.order.orderDate || detailData.order.createdAt) },
+                      { icon: 'bi-geo-alt-fill', label: 'Địa chỉ giao', value: detailData.order.shippingAddress },
+                      { icon: 'bi-tag-fill', label: 'Mã khuyến mãi', value: detailData.order.promotion?.code || '—' },
+                      { icon: 'bi-cash-coin', label: 'Tổng tiền', value: formatCurrency(detailData.order.totalAmount), highlight: true },
                     ].map(({ icon, label, value, highlight }) => (
                       <div key={label} style={{
                         display: 'flex', alignItems: 'flex-start', gap: 10,

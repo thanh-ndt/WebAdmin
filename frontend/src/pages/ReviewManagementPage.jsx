@@ -73,9 +73,9 @@ function pageBtnStyle(disabled, active = false) {
 function ReviewManagementPage() {
   const [stats, setStats] = useState(null);
 
-  const [reviews, setReviews]       = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [search, setSearch]         = useState('');
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [ratingFilter, setRatingFilter] = useState('');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const LIMIT = 10;
@@ -139,7 +139,7 @@ function ReviewManagementPage() {
     <div className="management-page">
       {/* ── Page Header ── */}
       <div className="page-header">
-        <h2>⭐ Quản lý đánh giá</h2>
+        <h2>Quản lý đánh giá</h2>
       </div>
 
       {/* ── Stats Cards ── */}
@@ -150,12 +150,12 @@ function ReviewManagementPage() {
           gap: 16, marginBottom: 24,
         }}>
           <StatCard icon="bi-chat-heart-fill" color="#3498db" label="Tổng đánh giá" value={stats.total} />
-          <StatCard icon="bi-star-fill"       color="#f39c12" label="Điểm TB"       value={stats.avgRating ? stats.avgRating + ' / 5' : '0'} />
-          <StatCard icon="bi-5-square-fill"   color="#27ae60" label="5 Sao"         value={stats.distribution?.[5] || 0} />
-          <StatCard icon="bi-4-square-fill"   color="#3498db" label="4 Sao"         value={stats.distribution?.[4] || 0} />
-          <StatCard icon="bi-3-square-fill"   color="#f1c40f" label="3 Sao"         value={stats.distribution?.[3] || 0} />
-          <StatCard icon="bi-2-square-fill"   color="#e67e22" label="2 Sao"         value={stats.distribution?.[2] || 0} />
-          <StatCard icon="bi-1-square-fill"   color="#e74c3c" label="1 Sao"         value={stats.distribution?.[1] || 0} />
+          <StatCard icon="bi-star-fill" color="#f39c12" label="Điểm TB" value={stats.avgRating ? stats.avgRating + ' / 5' : '0'} />
+          <StatCard icon="bi-5-square-fill" color="#27ae60" label="5 Sao" value={stats.distribution?.[5] || 0} />
+          <StatCard icon="bi-4-square-fill" color="#3498db" label="4 Sao" value={stats.distribution?.[4] || 0} />
+          <StatCard icon="bi-3-square-fill" color="#f1c40f" label="3 Sao" value={stats.distribution?.[3] || 0} />
+          <StatCard icon="bi-2-square-fill" color="#e67e22" label="2 Sao" value={stats.distribution?.[2] || 0} />
+          <StatCard icon="bi-1-square-fill" color="#e74c3c" label="1 Sao" value={stats.distribution?.[1] || 0} />
         </div>
       )}
 

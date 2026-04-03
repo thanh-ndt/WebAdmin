@@ -27,8 +27,8 @@ const login = async (req, res) => {
             return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });
         }
 
-        // KIỂM TRA ROLE (Chỉ cho phép role 'owner' đăng nhập admin)
-        if (user.role !== 'owner') {
+        // KIỂM TRA ROLE (Chỉ cho phép role 'owner' hoặc 'admin' đăng nhập admin)
+        if (user.role !== 'owner' && user.role !== 'admin') {
             return res.status(403).json({ message: 'Bạn không có quyền truy cập trang quản trị.' });
         }
 
@@ -68,7 +68,7 @@ const forgotPassword = async (req, res) => {
             return res.status(400).json({ message: 'Vui lòng nhập địa chỉ email.' });
         }
 
-        const user = await User.findOne({ email, role: 'owner' });
+        const user = await User.findOne({ email, role: { $in: ['owner', 'admin'] } });
         if (!user) {
             return res.json({ message: 'Nếu email tồn tại, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.' });
         }
@@ -120,7 +120,7 @@ const resetPassword = async (req, res) => {
         const user = await User.findOne({
             resetPasswordToken: token,
             resetPasswordExpires: { $gt: Date.now() },
-            role: 'owner'
+            role: { $in: ['owner', 'admin'] }
         });
 
         if (!user) {

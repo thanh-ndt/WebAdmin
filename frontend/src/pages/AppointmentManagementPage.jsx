@@ -72,18 +72,18 @@ function AppointmentManagementPage() {
   return (
     <div className="management-page">
       <div className="page-header">
-        <h2>📅 Quản lý lịch hẹn</h2>
+        <h2>Quản lý lịch hẹn</h2>
       </div>
 
-      <StatsHeader 
-        fetchFn={getAppointmentStats} 
+      <StatsHeader
+        fetchFn={getAppointmentStats}
         cards={[
-          { key: 'total',     label: 'Tổng lịch hẹn',  icon: 'bi-calendar-fill',   color: '#3498db' },
-          { key: 'pending',   label: 'Chờ xác nhận',   icon: 'bi-hourglass-split', color: '#f39c12' },
-          { key: 'confirmed', label: 'Đã xác nhận',    icon: 'bi-check-circle',    color: '#3498db' },
-          { key: 'completed', label: 'Hoàn thành',    icon: 'bi-calendar-check',   color: '#27ae60' },
-          { key: 'cancelled', label: 'Đã hủy',         icon: 'bi-x-circle',        color: '#e74c3c' },
-        ]} 
+          { key: 'total', label: 'Tổng lịch hẹn', icon: 'bi-calendar-fill', color: '#3498db' },
+          { key: 'pending', label: 'Chờ xác nhận', icon: 'bi-hourglass-split', color: '#f39c12' },
+          { key: 'confirmed', label: 'Đã xác nhận', icon: 'bi-check-circle', color: '#3498db' },
+          { key: 'completed', label: 'Hoàn thành', icon: 'bi-calendar-check', color: '#27ae60' },
+          { key: 'cancelled', label: 'Đã hủy', icon: 'bi-x-circle', color: '#e74c3c' },
+        ]}
       />
 
       <div className="filter-bar">

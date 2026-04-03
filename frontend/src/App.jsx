@@ -14,6 +14,7 @@ import ReviewManagementPage from './pages/ReviewManagementPage';
 import RevenueManagementPage from './pages/RevenueManagementPage';
 import PromotionManagementPage from './pages/PromotionManagementPage';
 import VehicleModelManagementPage from './pages/VehicleModelManagementPage';
+import ReturnManagementPage from './pages/ReturnManagementPage';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './App.css';
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="reviews" element={<ReviewManagementPage />} />
           <Route path="revenue" element={<RevenueManagementPage />} />
           <Route path="promotions" element={<PromotionManagementPage />} />
+          <Route path="returns" element={<ReturnManagementPage />} />
           <Route path="vehicle-models" element={<VehicleModelManagementPage />} />
         </Route>
       </Routes>

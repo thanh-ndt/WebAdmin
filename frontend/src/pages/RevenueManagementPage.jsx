@@ -64,7 +64,7 @@ function RevenueManagementPage() {
     <div className="revenue-page">
       <div className="page-header d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="mb-1">📊 Quản lý doanh thu</h2>
+          <h2 className="mb-1">Quản lý doanh thu</h2>
           <p className="text-muted mb-0">Theo dõi và phân tích doanh thu bán hàng theo thời gian.</p>
         </div>
         <div className="total-revenue-badge p-3 bg-white border rounded shadow-sm text-end">
@@ -80,7 +80,7 @@ function RevenueManagementPage() {
             Doanh thu theo từng tháng
           </h5>
         </div>
-        
+
         <Table hover responsive className="data-table mb-0">
           <thead>
             <tr>
@@ -99,16 +99,16 @@ function RevenueManagementPage() {
                   </td>
                   <td className="text-center">
                     <span className="badge bg-light text-dark border px-3 py-2">
-                       {item.orderCount} đơn hàng
+                      {item.orderCount} đơn hàng
                     </span>
                   </td>
                   <td className="text-end fw-bold text-success">
                     {formatCurrency(item.totalRevenue)}
                   </td>
                   <td className="text-center">
-                    <Button 
-                      variant="outline-primary" 
-                      size="sm" 
+                    <Button
+                      variant="outline-primary"
+                      size="sm"
                       onClick={() => handleViewDetails(item._id.year, item._id.month)}
                       className="rounded-pill px-3"
                     >
@@ -120,7 +120,7 @@ function RevenueManagementPage() {
             ) : (
               <tr>
                 <td colSpan="4" className="text-center py-5 text-muted">
-                    Chưa có dữ liệu doanh thu.
+                  Chưa có dữ liệu doanh thu.
                 </td>
               </tr>
             )}

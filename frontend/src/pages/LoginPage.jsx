@@ -14,7 +14,7 @@ const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     
     const { user, token } = useSelector((state) => state.auth);
-    if (token && user && user.role === 'owner') {
+    if (token && user && (user.role === 'owner' || user.role === 'admin')) {
         return <Navigate to="/admin" replace />;
     }
 

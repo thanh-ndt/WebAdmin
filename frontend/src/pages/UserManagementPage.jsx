@@ -16,21 +16,21 @@ function UserManagementPage() {
   const [stats, setStats] = useState(null);
 
   // Table
-  const [users, setUsers]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [search, setSearch]       = useState('');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const LIMIT = 10;
 
   // Detail modal
-  const [detailUser, setDetailUser]   = useState(null);
+  const [detailUser, setDetailUser] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [showDetail, setShowDetail]   = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   // Edit modal
-  const [showEdit, setShowEdit]   = useState(false);
-  const [editForm, setEditForm]   = useState({});
+  const [showEdit, setShowEdit] = useState(false);
+  const [editForm, setEditForm] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   // Toast
@@ -95,10 +95,10 @@ function UserManagementPage() {
   // ── Open edit modal ───────────────────────────────────────────────────────
   const handleOpenEdit = (user) => {
     setEditForm({
-      _id:             user._id,
-      fullName:        user.fullName        || '',
-      phoneNumber:     user.phoneNumber     || '',
-      role:            user.role            || 'customer',
+      _id: user._id,
+      fullName: user.fullName || '',
+      phoneNumber: user.phoneNumber || '',
+      role: user.role || 'customer',
       isEmailVerified: user.isEmailVerified ?? false,
     });
     setShowEdit(true);
@@ -110,9 +110,9 @@ function UserManagementPage() {
     setSubmitting(true);
     try {
       await updateUser(editForm._id, {
-        fullName:        editForm.fullName,
-        phoneNumber:     editForm.phoneNumber,
-        role:            editForm.role,
+        fullName: editForm.fullName,
+        phoneNumber: editForm.phoneNumber,
+        role: editForm.role,
         isEmailVerified: editForm.isEmailVerified,
       });
       showToast('Cập nhật người dùng thành công!');
@@ -149,17 +149,17 @@ function UserManagementPage() {
 
       {/* ── Page Header ── */}
       <div className="page-header">
-        <h2>👥 Quản lý người dùng</h2>
+        <h2>Quản lý người dùng</h2>
       </div>
 
       {/* ── Stats Cards ── */}
       {stats && (
         <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-          <StatCard icon="bi-people-fill"    color="#3498db" label="Tổng người dùng" value={stats.total} />
-          <StatCard icon="bi-person-fill"    color="#27ae60" label="Khách hàng"       value={stats.customers} />
-          <StatCard icon="bi-shield-fill"    color="#e74c3c" label="Quản trị viên"    value={stats.owners} />
+          <StatCard icon="bi-people-fill" color="#3498db" label="Tổng người dùng" value={stats.total} />
+          <StatCard icon="bi-person-fill" color="#27ae60" label="Khách hàng" value={stats.customers} />
+          <StatCard icon="bi-shield-fill" color="#e74c3c" label="Quản trị viên" value={stats.owners} />
           <StatCard icon="bi-patch-check-fill" color="#f39c12" label="Đã xác thực email" value={stats.verified} />
-          <StatCard icon="bi-person-plus-fill" color="#9b59b6" label="Mới tháng này"  value={stats.newThisMonth} />
+          <StatCard icon="bi-person-plus-fill" color="#9b59b6" label="Mới tháng này" value={stats.newThisMonth} />
         </div>
       )}
 
@@ -246,7 +246,7 @@ function UserManagementPage() {
                   <td style={{ textAlign: 'center' }}>
                     {user.isEmailVerified
                       ? <i className="bi bi-check-circle-fill" style={{ color: '#27ae60', fontSize: '18px' }} title="Đã xác thực" />
-                      : <i className="bi bi-x-circle-fill"     style={{ color: '#e74c3c', fontSize: '18px' }} title="Chưa xác thực" />
+                      : <i className="bi bi-x-circle-fill" style={{ color: '#e74c3c', fontSize: '18px' }} title="Chưa xác thực" />
                     }
                   </td>
                   <td style={{ color: '#888', fontSize: '13px' }}>{formatDate(user.createdAt)}</td>
@@ -335,11 +335,11 @@ function UserManagementPage() {
 
                   {/* Info rows */}
                   {[
-                    { icon: 'bi-envelope-fill',    label: 'Email',          value: detailUser.email },
-                    { icon: 'bi-telephone-fill',   label: 'Số điện thoại',  value: detailUser.phoneNumber || '—' },
-                    { icon: 'bi-calendar-fill',    label: 'Ngày sinh',      value: formatDate(detailUser.dob) },
-                    { icon: 'bi-calendar-plus-fill',label: 'Ngày tạo',      value: formatDate(detailUser.createdAt) },
-                    { icon: 'bi-bag-check-fill',   label: 'Số đơn hàng',   value: detailUser.orderCount ?? '—' },
+                    { icon: 'bi-envelope-fill', label: 'Email', value: detailUser.email },
+                    { icon: 'bi-telephone-fill', label: 'Số điện thoại', value: detailUser.phoneNumber || '—' },
+                    { icon: 'bi-calendar-fill', label: 'Ngày sinh', value: formatDate(detailUser.dob) },
+                    { icon: 'bi-calendar-plus-fill', label: 'Ngày tạo', value: formatDate(detailUser.createdAt) },
+                    { icon: 'bi-bag-check-fill', label: 'Số đơn hàng', value: detailUser.orderCount ?? '—' },
                   ].map(({ icon, label, value }) => (
                     <div key={label} style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f0f0f0' }}>
                       <i className={`bi ${icon}`} style={{ width: 24, color: '#e74c3c', marginRight: 12 }} />

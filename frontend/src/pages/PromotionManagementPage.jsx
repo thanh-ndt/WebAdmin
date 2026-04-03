@@ -36,16 +36,16 @@ const PromotionManagementPage = () => {
         try {
             console.log('Bắt đầu tải dữ liệu...');
             const [promoRes, modelRes] = await Promise.all([
-                getPromotions(), 
+                getPromotions(),
                 getVehicleModels()
             ]);
-            
+
             console.log('Raw Promo Data:', promoRes.data);
             console.log('Raw Model Data:', modelRes.data);
-            
+
             const promoList = promoRes.data?.data || [];
             const modelList = modelRes.data?.data || [];
-            
+
             setPromotions(promoList);
             setVehicleModels(modelList);
         } catch (error) {
@@ -158,7 +158,7 @@ const PromotionManagementPage = () => {
     return (
         <div className="management-page">
             <div className="page-header">
-                <h2>📣 Quản lý khuyến mãi</h2>
+                <h2>Quản lý khuyến mãi</h2>
                 <button className="btn-add" onClick={openAddModal}>
                     <i className="bi bi-plus-lg"></i> Tạo khuyến mãi mới
                 </button>
@@ -192,8 +192,8 @@ const PromotionManagementPage = () => {
                                     <tr key={promo._id}>
                                         <td className="fw-bold text-primary">{promo.code}</td>
                                         <td>
-                                            {promo.type === 'percentage' 
-                                                ? `${promo.discountValue}%` 
+                                            {promo.type === 'percentage'
+                                                ? `${promo.discountValue}%`
                                                 : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(promo.discountValue)
                                             }
                                         </td>
@@ -202,14 +202,14 @@ const PromotionManagementPage = () => {
                                             <div>Kết thúc: {new Date(promo.validTo).toLocaleDateString('vi-VN')}</div>
                                         </td>
                                         <td>
-                                            {promo.applicableModels?.length > 0 
+                                            {promo.applicableModels?.length > 0
                                                 ? <div className="d-flex flex-wrap gap-1">
                                                     {promo.applicableModels.map((m, idx) => (
                                                         <span key={idx} className="badge bg-light text-dark border small">
                                                             {typeof m === 'object' ? m.name : 'Model'}
                                                         </span>
                                                     ))}
-                                                  </div>
+                                                </div>
                                                 : <span className="text-muted small">Tất cả xe</span>
                                             }
                                         </td>
@@ -243,11 +243,11 @@ const PromotionManagementPage = () => {
                             <div className="modal-body">
                                 <div className="form-group mb-3">
                                     <label className="fw-bold mb-1">Mã khuyến mãi *</label>
-                                    <input 
-                                        type="text" 
+                                    <input
+                                        type="text"
                                         className="form-control"
                                         value={form.code}
-                                        onChange={e => setForm({...form, code: e.target.value.toUpperCase()})}
+                                        onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
                                         required
                                         placeholder="VD: GIAM20, TET2024..."
                                     />
@@ -255,10 +255,10 @@ const PromotionManagementPage = () => {
                                 <div className="row">
                                     <div className="col-md-6 form-group mb-3">
                                         <label className="fw-bold mb-1">Loại giảm giá *</label>
-                                        <select 
+                                        <select
                                             className="form-control"
                                             value={form.type}
-                                            onChange={e => setForm({...form, type: e.target.value})}
+                                            onChange={e => setForm({ ...form, type: e.target.value })}
                                         >
                                             <option value="percentage">Phần trăm (%)</option>
                                             <option value="fixed">Số tiền cố định (VNĐ)</option>
@@ -266,49 +266,49 @@ const PromotionManagementPage = () => {
                                     </div>
                                     <div className="col-md-6 form-group mb-3">
                                         <label className="fw-bold mb-1">Giá trị giảm *</label>
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             className="form-control"
                                             value={form.discountValue}
-                                            onChange={e => setForm({...form, discountValue: e.target.value})}
+                                            onChange={e => setForm({ ...form, discountValue: e.target.value })}
                                             required
                                         />
                                     </div>
                                 </div>
                                 <div className="form-group mb-3">
                                     <label className="fw-bold mb-1">Mô tả</label>
-                                    <textarea 
+                                    <textarea
                                         className="form-control"
                                         value={form.description}
-                                        onChange={e => setForm({...form, description: e.target.value})}
+                                        onChange={e => setForm({ ...form, description: e.target.value })}
                                         rows="2"
                                     ></textarea>
                                 </div>
                                 <div className="row">
                                     <div className="col-md-6 form-group mb-3">
                                         <label className="fw-bold mb-1">Ngày bắt đầu *</label>
-                                        <input 
-                                            type="date" 
+                                        <input
+                                            type="date"
                                             className="form-control"
                                             value={form.validFrom}
-                                            onChange={e => setForm({...form, validFrom: e.target.value})}
+                                            onChange={e => setForm({ ...form, validFrom: e.target.value })}
                                             required
                                         />
                                     </div>
                                     <div className="col-md-6 form-group mb-3">
                                         <label className="fw-bold mb-1">Ngày kết thúc *</label>
-                                        <input 
-                                            type="date" 
+                                        <input
+                                            type="date"
                                             className="form-control"
                                             value={form.validTo}
-                                            onChange={e => setForm({...form, validTo: e.target.value})}
+                                            onChange={e => setForm({ ...form, validTo: e.target.value })}
                                             required
                                         />
                                     </div>
                                 </div>
                                 <div className="form-group mb-3">
                                     <label className="fw-bold mb-1">Dòng xe áp dụng</label>
-                                    <select 
+                                    <select
                                         className="form-control"
                                         value={form.applicableModels[0] || ''}
                                         onChange={e => handleModelChange(e.target.value)}
@@ -322,12 +322,12 @@ const PromotionManagementPage = () => {
                                     </select>
                                 </div>
                                 <div className="form-check mb-3">
-                                    <input 
-                                        className="form-check-input" 
-                                        type="checkbox" 
+                                    <input
+                                        className="form-check-input"
+                                        type="checkbox"
                                         id="isActive"
                                         checked={form.isActive}
-                                        onChange={e => setForm({...form, isActive: e.target.checked})}
+                                        onChange={e => setForm({ ...form, isActive: e.target.checked })}
                                     />
                                     <label className="form-check-label fw-bold" htmlFor="isActive">
                                         Kích hoạt mã này

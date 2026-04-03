@@ -262,7 +262,7 @@ function VehicleManagementPage() {
   return (
     <div className="management-page">
       <div className="page-header">
-        <h2>🚗 Quản lý xe</h2>
+        <h2>Quản lý xe</h2>
         <button className="btn-add" onClick={openAddModal}>
           <i className="bi bi-plus-lg"></i> Thêm xe mới
         </button>

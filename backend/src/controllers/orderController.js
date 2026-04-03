@@ -3,6 +3,7 @@ const OrderDetail = require('../models/OrderDetail');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const sendEmail = require('../utils/sendEmail');
+const ReturnRequest = require('../models/ReturnRequest');
 require('../models/Promotion');
 
 // GET /api/orders/stats
@@ -21,7 +22,17 @@ const getOrderStats = async (req, res) => {
       { $match: { status: 'delivered' } },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } },
     ]);
-    const revenue = revenueResult[0]?.total || 0;
+    
+    // Tìm các đơn hàng đã duyệt trả để trừ tiền
+    const approvedReturns = await ReturnRequest.find({ status: 'approved' }).populate('order');
+    let returnedRevenue = 0;
+    approvedReturns.forEach(req => {
+        if (req.order && req.order.status === 'delivered') {
+            returnedRevenue += req.order.totalAmount;
+        }
+    });
+
+    const revenue = Math.max(0, (revenueResult[0]?.total || 0) - returnedRevenue);
 
     res.json({ total, pending, confirmed, shipping, delivered, cancelled, revenue });
   } catch (error) {
@@ -58,9 +69,21 @@ const getOrders = async (req, res) => {
       .populate('promotion', 'code discountPercent')
       .sort({ createdAt: -1 })
       .skip((pageNum - 1) * limitNum)
-      .limit(limitNum);
+      .limit(limitNum)
+      .lean(); // Dùng lean để có thể add field vào object
 
-    res.json({ orders, total, totalPages, page: pageNum });
+    // Kẹp thêm trạng thái trả hàng (nếu có) vào các đơn đã giao
+    const ordersWithReturn = await Promise.all(orders.map(async (order) => {
+        if (order.status === 'delivered') {
+            const returnReq = await ReturnRequest.findOne({ order: order._id }).lean();
+            if (returnReq) {
+                order.returnStatus = returnReq.status;
+            }
+        }
+        return order;
+    }));
+
+    res.json({ orders: ordersWithReturn, total, totalPages, page: pageNum });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

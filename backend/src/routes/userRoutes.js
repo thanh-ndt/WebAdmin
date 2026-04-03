@@ -1,6 +1,6 @@
 const express = require('express');
 const router  = express.Router();
-const { protect, ownerOnly } = require('../middleware/authMiddleware');
+const { protect, adminOnly } = require('../middleware/authMiddleware');
 const {
     getAllUsers,
     getUserById,
@@ -9,8 +9,8 @@ const {
     getUserStats,
 } = require('../controllers/userController');
 
-// Tất cả routes yêu cầu đăng nhập và quyền owner
-router.use(protect, ownerOnly);
+// Tất cả routes yêu cầu đăng nhập và quyền admin/owner
+router.use(protect, adminOnly);
 
 // GET  /api/users/stats   — thống kê tổng quan (phải đặt trước /:id)
 router.get('/stats', getUserStats);
