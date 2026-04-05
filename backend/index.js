@@ -37,8 +37,9 @@ app.use('/api/returns', require('./src/routes/returnRoutes'));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
+// Cần dùng '/*path' (hoặc '/*bất_kỳ_tên_nào') thay cho '*' vì bạn dùng Express 5
 app.get('/*path', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5001;
