@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const connectDB = require('./src/congfig/db');
@@ -16,10 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 // Kết nối MongoDB
 connectDB();
 
-// Route kiểm tra server
-app.get('/', (req, res) => {
-  res.json({ message: 'Admin Backend API đang hoạt động!' });
-});
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // Routes
 app.use('/api/auth', require('./src/routes/authRoutes'));
@@ -35,6 +34,12 @@ app.use('/api/notifications', require('./src/routes/notificationRoutes'));
 app.use('/api/reviews', require('./src/routes/reviewRoutes'));
 app.use('/api/promotions', require('./src/routes/promotionRoutes'));
 app.use('/api/returns', require('./src/routes/returnRoutes'));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 const PORT = process.env.PORT || 5001;
 
